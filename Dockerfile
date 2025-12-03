@@ -1,6 +1,6 @@
 FROM php:8.2-fpm
 
-# Dependencias del sistema
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
     zip unzip git curl libpng-dev libonig-dev libxml2-dev mariadb-client \
     && docker-php-ext-install pdo_mysql mbstring gd xml
@@ -8,16 +8,18 @@ RUN apt-get update && apt-get install -y \
 # Instalar Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www
+WORKDIR /var/www/html
 
 COPY . .
 
-# Instalación de dependencias
+# Instalar dependencias de Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Permisos
+# Permisos de storage y cache
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-EXPOSE 8080
+# Exponer puerto
+EXPOSE 80
 
-CMD php artisan migrate --force && php artisan serve --host 0.0.0.0 --port 8080
+# Comando de inicio
+CMD php artisan migrate --force && php artisan serve --host 0.0.0.0 --port 80
